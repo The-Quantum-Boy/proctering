@@ -4,14 +4,32 @@ import draw from "./utilities";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import swal from "sweetalert";
 import * as posenet from "@tensorflow-models/posenet";
+import DoughnutChart from "./DoughnutChart";
+
+
+
 const Procter = () => {
   const [tab_change, setTabChange] = useState(0);
-  // const [key_press, setKeyPress] = useState(0);
-  let mobileCount = 0;
-  let downCount = 0;
-  let leftCount = 0;
-  let rightCount = 0;
-  let screenCount = 0;
+  const [key_press, setKeyPress] = useState(0);
+  const [mobileCount, setMobileCount] = useState(0);
+  const [downCount, setDownCount] = useState(0);
+  const [leftCount, setLeftCount] = useState(0);
+  const [rightCount, setRightCount] = useState(0);
+  const [screenCount, setScreenCount] = useState(0);
+  const [faceNotVisible, setFaceNotVisible] = useState(0);
+  const [speakCount, setSpeakCount]=useState(0);
+
+  const chartData = {
+    tab_change:tab_change,
+    key_press:key_press,
+    speakCount:speakCount,
+    mobileCount: mobileCount,
+    downCount: downCount,
+    leftCount: leftCount,
+    rightCount: rightCount,
+    screenCount: screenCount,
+    faceNotVisible: faceNotVisible,
+  };
 
   //disable right click
   document.addEventListener("contextmenu", (event) => {
@@ -22,11 +40,11 @@ const Procter = () => {
   const canvasRef = useRef(null);
   const blazeface = require("@tensorflow-models/blazeface");
 
+  //face detection start
   const runFacedetection = async () => {
     const model = await blazeface.load();
     const net = await posenet.load();
     const mobilenetModel = await mobilenet.load();
-
     console.log("Proctor Model is Loaded..");
 
     //speak count
@@ -48,7 +66,7 @@ const Procter = () => {
 
   const returnTensors = false;
   let speaking = false;
-  let speakCount = 0;
+ 
 
   const detect = async (model, net, mobilenetModel, analyser, dataArray) => {
     if (
@@ -72,7 +90,6 @@ const Procter = () => {
       canvasRef.current.height = videoHeight;
 
       // Make detections
-
       const prediction = await model.estimateFaces(video, returnTensors);
       const mobilePrediction = await mobilenetModel.classify(video);
 
@@ -89,13 +106,16 @@ const Procter = () => {
 
       setTimeout(function () {
         if (prediction.length === 0) {
-          swal("Face Not Visible", "Action has been Recorded", "error");
+          setFaceNotVisible(faceNotVisible+1);
+          if(faceNotVisible>=5){
+             swal("Face Not Visible", "Action has been Recorded", "error");
+          }
         }
       }, 5000);
 
       // console.log(mobilePrediction[0].className);
       if (mobilePrediction[0].className.toLowerCase().includes("mobile")) {
-        mobileCount++;
+        setMobileCount(mobileCount+1);
         if (mobileCount >= 10) {
           swal(
             "Cell phone has been detected",
@@ -103,10 +123,10 @@ const Procter = () => {
             "error"
           );
           console.log(`Mobile detected! Count: ${mobileCount}`);
-          mobileCount = 0;
+          setMobileCount(0);
         }
       }
-
+      //pose
       const pose = await net.estimateSinglePose(video);
       const leftEye = pose.keypoints[1];
       const rightEye = pose.keypoints[2];
@@ -115,27 +135,27 @@ const Procter = () => {
         leftEye.position.x <= screenMidpoint &&
         rightEye.position.x <= screenMidpoint
       ) {
-        rightCount++;
+         setRightCount(rightCount+1);
         if (rightCount >= 10) {
           swal("You looked away from the Screen (To the Right)");
           console.log("user is looking to the right ", rightCount);
-          rightCount = 0;
+          setRightCount(0);
         }
       } else if (
         leftEye.position.x >= screenMidpoint &&
         rightEye.position.x >= screenMidpoint
       ) {
-        leftCount++;
+         setLeftCount(leftCount+1);
         if (leftCount >= 10) {
           swal("You looked away from the Screen (To the Left)");
           console.log("user is looking to the left ", leftCount);
-          leftCount = 0;
+          setLeftCount(0);
         }
       } else {
-        screenCount++;
+        setScreenCount(screenCount+1)
         if (screenCount >= 10) {
           console.log("user is looking at the screen");
-          screenCount = 0;
+          setScreenCount(0);
         }
       }
 
@@ -144,11 +164,11 @@ const Procter = () => {
       const noseY = nose.position.y;
       const noseThreshold = videoHeight * 0.7;
       if (noseY > noseThreshold) {
-        downCount++;
+        setDownCount(downCount+1);
         if (downCount >= 5) {
           swal("You are cheater", "Action has been Recorded", "error");
           console.log("user is looking down ", downCount);
-          downCount = 0;
+          setDownCount(0);
         }
       }
 
@@ -158,10 +178,10 @@ const Procter = () => {
       if (volume > 15) {
         if (!speaking) {
           speaking = true;
-          speakCount++;
+          setSpeakCount(speakCount+1);
           if (speakCount >= 10) {
             console.log(`User is speaking! Count: ${speakCount}`);
-            speakCount = 0;
+            setSpeakCount(0);
           }
         }
       } else {
@@ -178,6 +198,7 @@ const Procter = () => {
       //to detect ctrl key press
       document.addEventListener("keydown", function (event) {
         if (event.ctrlKey) {
+          setKeyPress(key_press+1);
           swal("Ctrl Key Press Detected!", "Action has been Recorded", "error");
         }
       });
@@ -185,6 +206,7 @@ const Procter = () => {
       //to detect alt key press
       document.addEventListener("keydown", function (event) {
         if (event.altKey) {
+           setKeyPress(key_press + 1);
           swal("Alt Key Press Detected!", "Action has been Recorded", "error");
         }
       });
@@ -230,6 +252,7 @@ const Procter = () => {
             height: 480,
           }}
         />
+        <DoughnutChart chartData={chartData} />
       </header>
     </div>
   );
