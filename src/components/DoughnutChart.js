@@ -43,26 +43,26 @@ const DoughnutChart = ({ chartData }) => {
           faceNotVisible,
         ],
         backgroundColor: [
-          "#F94144", //tab_change
-          "#F8961E", //key_press
-          "#F9C74F", //speakCount
-          "#43AA8B", //mobileCount
-          "#90BE6D", //downCount
-          "#4D908E", //leftCount
-          "#277DA1", //rightCount
-          "#577590", //screenCount
-          "#9D4EDD", //faceNotVisible
+          "#F94144", 
+          "#F8961E", 
+          "#F9C74F", 
+          "#43AA8B", 
+          "#90BE6D", 
+          "#4D908E", 
+          "#277DA1", 
+          "#577590", 
+          "#9D4EDD", 
         ],
         borderColor: [
-          "#D62828", //tab_change
-          "#CA6C1D", //key_press
-          "#BF9E24", //speakCount
-          "#2C7A7B", //mobileCount
-          "#6B8E23", //downCount
-          "#2B7A78", //leftCount
-          "#0B4F6C", //rightCount
-          "#2C3E50", //screenCount
-          "#6C3483", //faceNotVisible
+          "#D62828", 
+          "#CA6C1D", 
+          "#BF9E24", 
+          "#2C7A7B", 
+          "#6B8E23", 
+          "#2B7A78", 
+          "#0B4F6C", 
+          "#2C3E50", 
+          "#6C3483", 
         ],
         borderWidth: 1,
       },
